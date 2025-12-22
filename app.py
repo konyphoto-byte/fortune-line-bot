@@ -18,11 +18,12 @@ handler = WebhookHandler(os.environ.get('CHANNEL_SECRET', 'YOUR_CHANNEL_SECRET')
 
 # 占い機能
 
-def get_daily_fortune():
-    """今日の運勢を生成"""
-    # 日付をシードにして毎日同じ結果になるように
+def get_daily_fortune(user_id):
+    """今日の運勢を生成（人ごとに違う結果）"""
+    # ユーザーID + 日付をシードにして、人ごとに違う結果に
     today = datetime.now().strftime('%Y%m%d')
-    random.seed(today)
+    seed = f"{user_id}_{today}"
+    random.seed(seed)
     
     # 運勢スコア (0-100点)
     score = random.randint(30, 100)
@@ -118,7 +119,7 @@ def send_fortune():
         # 画像のURL(後でRenderにアップロードした画像URLに変更します)
         image_url = os.environ.get('AI_IMAGE_URL', 'https://i.imgur.com/u5n4AAu.png')
         
-        fortune_message = get_daily_fortune()
+        fortune_message = get_daily_fortune(user_id)
         
         # 画像とテキストを送信
         messages = [
@@ -158,12 +159,13 @@ def callback():
 def handle_message(event):
     """ユーザーからメッセージが来た時の処理"""
     text = event.message.text
+    user_id = event.source.user_id
     
     if '占い' in text or '運勢' in text:
         # 画像のURL
         image_url = os.environ.get('AI_IMAGE_URL', 'https://i.imgur.com/u5n4AAu.png')
         
-        fortune = get_daily_fortune()
+        fortune = get_daily_fortune(user_id)
         
         # 画像とテキストを返信
         messages = [
@@ -185,3 +187,25 @@ def handle_message(event):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+```
+
+---
+
+## 修正手順：
+
+### 1. GitHubでapp.pyを開く
+https://github.com/konyphoto-byte/fortune-line-bot
+
+### 2. `app.py`をクリック
+
+### 3. 右上の鉛筆マーク（Edit）をクリック
+
+### 4. 全文を削除
+
+### 5. 上記のコードを全部コピペ
+
+### 6. 下にスクロールして「Commit changes」
+
+### 7. コミットメッセージ：
+```
+人ごとに違う占い結果に変更
