@@ -187,25 +187,3 @@ def handle_message(event):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-```
-
----
-
-## 修正手順：
-
-### 1. GitHubでapp.pyを開く
-https://github.com/konyphoto-byte/fortune-line-bot
-
-### 2. `app.py`をクリック
-
-### 3. 右上の鉛筆マーク（Edit）をクリック
-
-### 4. 全文を削除
-
-### 5. 上記のコードを全部コピペ
-
-### 6. 下にスクロールして「Commit changes」
-
-### 7. コミットメッセージ：
-```
-人ごとに違う占い結果に変更
