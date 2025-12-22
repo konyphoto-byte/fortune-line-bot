@@ -13,15 +13,15 @@ app = Flask(**name**)
 
 # 環境変数から取得(後で設定します)
 
-line_bot_api = LineBotApi(os.environ.get(‘CHANNEL_ACCESS_TOKEN’, ‘YOUR_CHANNEL_ACCESS_TOKEN’))
-handler = WebhookHandler(os.environ.get(‘CHANNEL_SECRET’, ‘YOUR_CHANNEL_SECRET’))
+line_bot_api = LineBotApi(os.environ.get(‘CHANNEL_ACCESS_TOKEN', ‘YOUR_CHANNEL_ACCESS_TOKEN'))
+handler = WebhookHandler(os.environ.get(‘CHANNEL_SECRET', ‘YOUR_CHANNEL_SECRET'))
 
 # 占い機能
 
 def get_daily_fortune():
-“”“今日の運勢を生成”””
+“"“今日の運勢を生成"""
 # 日付をシードにして毎日同じ結果になるように
-today = datetime.now().strftime(’%Y%m%d’)
+today = datetime.now().strftime('%Y%m%d')
 random.seed(today)
 
 ```
@@ -89,7 +89,7 @@ lucky_item = random.choice(items)
 message = f"""🔮 今日の運勢 🔮
 ```
 
-{datetime.now().strftime(’%Y年%m月%d日’)}
+{datetime.now().strftime('%Y年%m月%d日')}
 
 【総合運】{score}点
 {level}
@@ -103,7 +103,7 @@ message = f"""🔮 今日の運勢 🔮
 【ラッキーアイテム】
 {lucky_item}
 
-良い一日を〜!✨”””
+良い一日を〜!✨"""
 
 ```
 return message
@@ -111,12 +111,12 @@ return message
 
 # 定期送信用エンドポイント(cronから呼ばれる)
 
-@app.route(’/send_fortune’, methods=[‘POST’])
+@app.route('/send_fortune', methods=[‘POST'])
 def send_fortune():
-“”“毎朝8時に占いを送信”””
+“"“毎朝8時に占いを送信"""
 try:
 # ここにユーザーIDを設定(後で説明します)
-user_id = os.environ.get(‘LINE_USER_ID’, ‘YOUR_USER_ID’)
+user_id = os.environ.get(‘LINE_USER_ID', ‘YOUR_USER_ID')
 
 ```
     # 画像のURL(後でRenderにアップロードした画像URLに変更します)
@@ -143,9 +143,9 @@ except Exception as e:
 
 # LINEからのメッセージ受信用
 
-@app.route(”/callback”, methods=[‘POST’])
+@app.route("/callback", methods=[‘POST'])
 def callback():
-signature = request.headers[‘X-Line-Signature’]
+signature = request.headers[‘X-Line-Signature']
 body = request.get_data(as_text=True)
 
 ```
@@ -161,7 +161,7 @@ return 'OK'
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-“”“ユーザーからメッセージが来た時の処理”””
+“"“ユーザーからメッセージが来た時の処理"""
 text = event.message.text
 
 ```
@@ -188,6 +188,6 @@ else:
     )
 ```
 
-if **name** == “**main**”:
-port = int(os.environ.get(“PORT”, 5000))
-app.run(host=“0.0.0.0”, port=port)
+if **name** == “**main**":
+port = int(os.environ.get(“PORT", 5000))
+app.run(host=“0.0.0.0", port=port)
