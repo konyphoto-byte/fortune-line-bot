@@ -1,6 +1,7 @@
 import os
 import random
 from datetime import datetime
+import pytz
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -12,12 +13,57 @@ from linebot.models import (
 app = Flask(__name__)
 
 # 環境変数から取得(後で設定します)
-
 line_bot_api = LineBotApi(os.environ.get('CHANNEL_ACCESS_TOKEN', 'YOUR_CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.environ.get('CHANNEL_SECRET', 'YOUR_CHANNEL_SECRET'))
 
-# 占い機能
+# メッセージ送信済みフラグ（1日1回だけ送るため）
+last_sent_date = None
 
+@app.route('/')
+def index():
+    """UptimeRobotからのアクセスを受けて、8時台ならメッセージ送信"""
+    global last_sent_date
+    
+    try:
+        # 日本時間を取得
+        jst = pytz.timezone('Asia/Tokyo')
+        now = datetime.now(jst)
+        today = now.strftime('%Y-%m-%d')
+        
+        # 8:00〜8:59の間で、まだ今日送信してない場合
+        if now.hour == 8 and last_sent_date != today:
+            # ユーザーIDを取得
+            user_id = os.environ.get('LINE_USER_ID', 'YOUR_USER_ID')
+            
+            # 画像のURL
+            image_url = os.environ.get('AI_IMAGE_URL', 'https://i.imgur.com/u5n4AAu.png')
+            
+            # 占いメッセージを生成
+            fortune_message = get_daily_fortune(user_id)
+            
+            # 画像とテキストを送信
+            messages = [
+                ImageSendMessage(
+                    original_content_url=image_url,
+                    preview_image_url=image_url
+                ),
+                TextSendMessage(text=fortune_message)
+            ]
+            
+            line_bot_api.push_message(user_id, messages)
+            
+            # 送信済みフラグを更新
+            last_sent_date = today
+            
+            return f'Fortune sent at {now.strftime("%Y-%m-%d %H:%M:%S")}', 200
+        else:
+            return f'Server is running. Current time: {now.strftime("%Y-%m-%d %H:%M:%S")}', 200
+            
+    except Exception as e:
+        print(f"Error in index: {e}")
+        return f'Error: {e}', 500
+
+# 占い機能
 def get_daily_fortune(user_id):
     """今日の運勢を生成（人ごとに違う結果）"""
     # ユーザーID + 日付をシードにして、人ごとに違う結果に
@@ -108,7 +154,6 @@ def get_daily_fortune(user_id):
 
 
 # 定期送信用エンドポイント(cronから呼ばれる)
-
 @app.route('/send_fortune', methods=['POST'])
 def send_fortune():
     """毎朝8時に占いを送信"""
@@ -139,7 +184,6 @@ def send_fortune():
 
 
 # LINEからのメッセージ受信用
-
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
@@ -154,7 +198,6 @@ def callback():
 
 
 # メッセージに反応
-
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     """ユーザーからメッセージが来た時の処理"""
