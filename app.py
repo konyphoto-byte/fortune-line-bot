@@ -66,8 +66,12 @@ def index():
 # 占い機能
 def get_daily_fortune(user_id):
     """今日の運勢を生成（人ごとに違う結果）"""
+    # 日本時間を取得
+    jst = pytz.timezone('Asia/Tokyo')
+    now_jst = datetime.now(jst)
+    
     # ユーザーID + 日付をシードにして、人ごとに違う結果に
-    today = datetime.now().strftime('%Y%m%d')
+    today = now_jst.strftime('%Y%m%d')
     seed = f"{user_id}_{today}"
     random.seed(seed)
     
@@ -134,7 +138,7 @@ def get_daily_fortune(user_id):
     
     message = f"""🔮 今日の運勢 🔮
 
-{datetime.now().strftime('%Y年%m月%d日')}
+{now_jst.strftime('%Y年%m月%d日')}
 
 【総合運】{score}点
 {level}
@@ -154,7 +158,7 @@ def get_daily_fortune(user_id):
 
 
 # 定期送信用エンドポイント(cronから呼ばれる)
-@app.route('/send_fortune', methods=['POST'])
+@app.route('/send_fortune', methods=['GET', 'POST'])
 def send_fortune():
     """毎朝8時に占いを送信"""
     try:
